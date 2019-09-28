@@ -48,6 +48,16 @@ function bin_add(a, b) {
   return res;
 }
 
+class Timer {
+  constructor() { }
+  start() {
+    this.start_time = Date.now();
+  }
+  get elapsed_seconds() {
+    return Math.floor((Date.now() - this.start_time) / 1000);
+  }
+}
+
 const Problems = [
   new Problem(
     "A", "等差数列",
