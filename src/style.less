@@ -1,29 +1,35 @@
-section > h2 {
-  font-size: 24px;
+section {
+  > h2 {
+    @h: 24px;
+    font-size: @h;
+    > .clock {
+      position: relative;
+      height: @h + 2px;
+      top: 3px;
+      padding-left: 15px;
+      padding-right: 6px;
+    }
+  }
+  > form {
+    padding-bottom: 30px;
+  }
 }
-section > h2 > .clock {
-  position: relative;
-  height: 26px;
-  top: 3px;
-  padding-left: 15px;
-  padding-right: 6px;
-}
-section > form {
-  padding-bottom: 30px;
-}
+
 input {
   -webkit-appearance: none;
   appearance: none;
 }
+
+// ac, wa
 .wa {
   color: hsl(0, 100%, 50%);
 }
 .wa-box {
-  background-color: #e7af5f;
+  background-color: rgb(231, 175, 95);
   color: white;
 }
 .ac-box {
-  background-color: #74b566;
+  background-color: rgb(116, 181, 102);
   color: white;
 }
 .ac-box,
@@ -31,12 +37,14 @@ input {
   padding: 4px 10px;
   border-radius: 3px;
 }
+
+// judge
 input[type=submit] {
   height: 30px;
   width: 100px;
   border: 0;
   color: white;
-  transition: all 0.3s;
+  transition: all .3s;
   font-size: 18px;
   outline: none;
   margin-right: 4px;
@@ -44,14 +52,15 @@ input[type=submit] {
 input[type=submit]:not(:disabled) {
   background-color: hsl(200, 80%, 40%);
   cursor: pointer;
-}
-input[type=submit]:not(:disabled):hover {
-  background-color: hsl(200, 80%, 30%);
+  &:hover {
+    background-color: hsl(200, 80%, 30%);
+  }
 }
 input[type=submit]:disabled {
   transition: none;
   background-color: #aaa;
 }
+
 input[type=text],
 input[type=number] {
   border: 1px solid #333;
@@ -59,9 +68,11 @@ input[type=number] {
   font-size: 18px;
   padding-left: 2px;
 }
+
 input[type=number] {
   width: 80px;
 }
+
 input[type=text] {
   width: 300px;
 }

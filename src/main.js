@@ -1,21 +1,27 @@
 class Problem {
-  constructor(id, title, timelimit_seconds, descriptions, anstext) {
-    this.id = id;
+  constructor(prefix, title, timelimit_seconds, statement, anstext, initial_values, judge) {
+    this.prefix = prefix;
     this.title = title;
     this.timelimit_seconds = timelimit_seconds;
-    this.descriptions = descriptions;
+    this.statement = statement;
     this.anstext = anstext;
+    this.initial_values = initial_values;
+    this.judge = judge;
+  }
+  get id() {
+    return `problem-${this.prefix}`;
   }
 }
 
 class JudgeResult {
-  constructor(result, message) {
+  constructor(is_ac, message) {
     if (message === undefined) {
-      message = result ? "正解です。" : "不正解です。";
+      message = is_ac ? "正解です。" : "不正解です。";
     }
-    this.result = result;
+    this.is_ac = is_ac;
     this.message = message;
   }
+  get is_wa() { return !this.is_ac; }
 }
 
 function bin_xor(a, b) {
@@ -50,21 +56,36 @@ function bin_add(a, b) {
 
 class Timer {
   constructor() { }
-  start() {
+  start(callback, interval = Math.floor(1000 / 60)) {
     this.start_time = Date.now();
+    this.interval = interval;
+    this.tid = setTimeout(() => { this.tick(callback); }, this.interval);
+  }
+  tick(callback) {
+    this.tid = setTimeout(() => { this.tick(callback); }, this.interval);
+    callback(this.elapsed_seconds);
+  }
+  stop() {
+    clearTimeout(this.tid);
   }
   get elapsed_seconds() {
     return Math.floor((Date.now() - this.start_time) / 1000);
   }
+  get is_started() {
+    return 'start_time' in this;
+  }
 }
+
+const num_range = 1000000;
 
 const Problems = [
   new Problem(
     "A", "等差数列",
     60 * 3,
-    ["2019 を 4 つ以上の連続する整数の和で表してください"],
-    ["{num} + ... + {num}"],
-    (l, r) => {
+    "<p>2019 を 4 つ以上の連続する整数の和で表してください</p>",
+    `<p><input type='number' min='-${num_range}' max='${num_range}' v-model='ans.l'> + ... + <input type='number' min='-${num_range}' max='${num_range}' v-model='ans.r'></p>`,
+    { l: 0, r: 0 },
+    ({ l, r }) => {
       const len = Math.max(0, r - l + 1);
       if (len < 4) return new JudgeResult(false, `長さが ${len} です。`);
       const sum = l * len + len * (len - 1) / 2;
@@ -75,12 +96,13 @@ const Problems = [
   new Problem(
     "B", "中世ヨーロッパの戦い",
     60 * 3,
-    [
-      "中世ヨーロッパの戦いで 39 人が参加し、現在 22人・10人・7人 の 3 つの国に分かれている。",
-      "行われたじゃんけんの回数としてあり得る回数を 1 つ挙げよ。",
-    ]
-    ["{num:0,10000} 回"],
-    n => {
+    `
+<p><a href='assets/B.png' target='_black'>中世ヨーロッパの戦い</a>で 39 人が参加し、現在 22人・10人・7人 の 3 つの国に分かれている。</p>
+<p>行われたじゃんけんの回数としてあり得る回数を 1 つ挙げよ。</p>
+    `,
+    `<p><input type='number' min='0' max='${num_range}' v-model='ans.n'> 回</p>`,
+    { n: 0 },
+    ({ n }) => {
       if (n < 36) return new JudgeResult(false);
       return new JudgeResult(true);
     }
@@ -88,22 +110,25 @@ const Problems = [
   new Problem(
     "C", "排他的論理NOT和集合",
     60 * 5,
-    [
-      "次の条件を全て満たす集合 S を探せ。",
-      [
-        "S には 3 要素以上含まれる",
-        "S に含まれるどの異なる 2 要素 a, b についても",
-        [
-          "a XOR b が S に含まれる",
-          "a + b が S に含まれない",
-        ]
-      ]
-    ],
-    [
-      "2進数表記で各要素をカンマ区切りで解答せよ。",
-      "{str:1101,1111,1010,10010}"
-    ],
-    str => {
+    `
+<p>次の条件を全て満たす集合 S を探せ。</p>
+<ul>
+  <li>S には 3 要素以上含まれる</li>
+  <li>
+    S に含まれるどの異なる 2 要素 a, b についても
+    <ul>
+      <li>a XOR b が S に含まれる</li>
+      <li>a + b が S に含まれない</li>
+    </ul>
+  </li>
+</ul>
+    `,
+    `
+<p>2進数表記で各要素をカンマ区切りで解答せよ。</p>
+<p><input type='text' placeholder='1101,1111,1010,10010' v-model='ans.str'></p>
+    `,
+    { str: "" },
+    ({ str }) => {
       if (str === '') {
         return new JudgeResult(false, "解答ボックスが空です。");
       }
@@ -149,26 +174,28 @@ const Problems = [
   new Problem(
     "D", "Semit",
     60 * 5,
-    [
-      "f(18) = 8",
-      "f(23) = 6",
-      "f(68) = 84",
-      "f(123) = 63",
-      "f(334) = 231",
-      "f(433) = ?",
-    ],
-    ["{str}"],
-    str => new JudgeResult(str !== "921")
+    `
+<p>f(18) = 8</p>
+<p>f(23) = 6</p>
+<p>f(68) = 84</p>
+<p>f(123) = 63</p>
+<p>f(334) = 231</p>
+<p>f(433) = ?</p>
+    `,
+    "<p><input type='text' v-model='ans.str'></p>",
+    { str: "" },
+    ({ str }) => new JudgeResult(str === "921")
   ),
   new Problem(
     "E", "Deficient Number",
     60 * 5,
-    ["自身を除く約数の総和が 677 になる自然数を 1 つ答えよ。"],
-    ["{num:0,100000000}"],
-    n => {
+    "<p>自身を除く約数の総和が 677 になる自然数を 1 つ答えよ。</p>",
+    "<p><input type='number' min='0' max='10000000' v-model='ans.n'></p>",
+    { n: 0 },
+    ({ n }) => {
       const answers = [2019, 11203, 15019, 18763, 36403, 49219, 52243, 60883, 63619, 85003, 87019, 94363, 101923, 103219, 107683, 112219, 113803];
       for (const i of answers) {
-        if (n === i) {
+        if (+n === i) {
           return new JudgeResult(true);
         }
       }
@@ -178,19 +205,20 @@ const Problems = [
   new Problem(
     "F", "数列 X",
     60 * 8,
-    [
-      "次を全て満たす数列 X を構成してください。",
-      [
-        "X は (2, 3, ..., 12) を並べ替えたものである",
-        "X で隣り合う 2 整数の最大公約数は 1 である",
-        "X で隣り合う 2 整数の差(絶対値)は 2 以上である",
-      ],
-      [
-        "カンマ区切りで入力してください。",
-        "{str:2,3,4,5,6,7,8,9,10,11,12}"
-      ]
-    ],
-    X => {
+    `
+<p>次を全て満たす数列 X を構成してください。</p>
+<ul>
+  <li>X は (2, 3, ..., 12) を並べ替えたものである</li>
+  <li>X で隣り合う 2 整数の最大公約数は 1 である</li>
+  <li>X で隣り合う 2 整数の差(絶対値)は 2 以上である</li>
+</ul>
+    `,
+    `
+<p>カンマ区切りで入力してください。</p>
+<p><input type='text' placeholder='2,3,4,5,6,7,8,9,10,11,12' v-model='ans.X'></p>
+    `,
+    { X: "" },
+    ({ X }) => {
       const answers = [
         [6, 11, 2, 9, 4, 7, 10, 3, 8, 5, 12],
         [6, 11, 2, 9, 4, 7, 12, 5, 8, 3, 10],
@@ -208,6 +236,7 @@ const Problems = [
         [12, 5, 8, 3, 10, 7, 4, 9, 2, 11, 6],
         [12, 7, 10, 3, 8, 5, 2, 9, 4, 11, 6],
       ];
+      X = X.replace(/ /g, '');
       for (const ans of answers) {
         if (X === ans.join(',')) {
           return new JudgeResult(true);
@@ -217,3 +246,98 @@ const Problems = [
     }
   )
 ];
+
+function init_problems_vue() {
+  let template = "";
+  for (const prob of Problems) {
+    template += `<div id='${prob.id}'></div>`;
+  }
+  const res = new Vue({
+    el: '#problems',
+    template: `<div>${template}</div>`,
+  });
+  for (const prob of Problems) {
+    const judge = prob.judge;
+    const rendered_id = `${prob.id}-rendered`;
+    const vm = new Vue({
+      el: `#${prob.id}`,
+      template: `
+<section id='#${rendered_id}'>
+  <h2 @click='is_started = start_timer(timer);'>
+    ${prob.prefix}. ${prob.title}
+    <img src='assets/clock.png' alt='clock' class='clock'></span>{{ format_timer(rest_seconds) }}
+  </h2>
+  <form @submit.prevent="judge(ans)" v-if='is_started'>
+    <div class='statement'>
+      ${prob.statement}
+    </div>
+    <div class='statement'>
+      ${prob.anstext}
+    </div>
+    <input type='submit' value='Judge' :disabled='judge_result !== null && judge_result.is_ac'>
+    <span>
+      <span v-if='judge_result !== null && judge_result.is_ac' class='ac'><span class='ac-box'>AC</span> {{ judge_result.message }}</span>
+      <span v-if='judge_result !== null && judge_result.is_wa' class='wa'><span class='wa-box'>WA</span> {{ judge_result.message }}</span>
+    </span>
+  </form>
+</section>
+      `,
+      data: {
+        ans: prob.initial_values,
+        timer: new Timer(),
+        timelimit_seconds: prob.timelimit_seconds,
+        rest_seconds: prob.timelimit_seconds,
+        is_started: false,
+        judge_result: null,
+      },
+      methods: {
+        judge: ans => {
+          const result = judge(ans);
+          vm.judge_result = result;
+          if (result.is_ac) {
+            vm.timer.stop();
+          }
+        },
+        start_timer: timer => {
+          if (!timer.is_started) {
+            timer.start(elapsed_seconds => {
+              if (elapsed_seconds >= vm.timelimit_seconds) {
+                timer.stop();
+                vm.judge_result = new JudgeResult(false, '時間切れです。');
+              }
+              vm.rest_seconds = Math.max(0, vm.timelimit_seconds - elapsed_seconds);
+            });
+          }
+          return timer.is_started;
+        },
+        format_timer: t => {
+          const m = Math.floor(t / 60);
+          const s = ('0' + t % 60).slice(-2);
+          return `${m}:${s}`;
+        }
+      }
+    });
+  }
+  return res;
+}
+
+function init_vue() {
+  init_problems_vue();
+}
+
+function init_inputs() {
+  // select
+  window.addEventListener('click', e => {
+    const elem = e.target;
+    if (elem.tagName === 'INPUT' && (elem.type === 'text' || elem.type === 'number')) {
+      elem.select();
+    }
+  });
+}
+
+function init() {
+  init_inputs();
+  init_vue();
+}
+
+init();
