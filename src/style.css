@@ -1,7 +1,14 @@
+body > section {
+  padding: 0 8px;
+}
 section > h2 {
+  margin: 0;
+  padding: 20px 0 20px 8px;
+}
+section > h2 > span {
   font-size: 24px;
 }
-section > h2 > .clock {
+section > h2 > span > .clock {
   position: relative;
   height: 26px;
   top: 3px;
@@ -9,11 +16,60 @@ section > h2 > .clock {
   padding-right: 6px;
 }
 section > form {
-  padding-bottom: 30px;
+  padding: 5px 0 30px 8px;
+}
+section.unopened {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+#problem_A_rendered {
+  background-color: hsl(0, 100%, 95%);
+}
+#problem_A_rendered.unopened:hover,
+#problem_A_rendered.opened > h2 {
+  background-color: hsl(0, 100%, 89%);
+}
+#problem_B_rendered {
+  background-color: hsl(60, 100%, 95%);
+}
+#problem_B_rendered.unopened:hover,
+#problem_B_rendered.opened > h2 {
+  background-color: hsl(60, 100%, 89%);
+}
+#problem_C_rendered {
+  background-color: hsl(120, 100%, 95%);
+}
+#problem_C_rendered.unopened:hover,
+#problem_C_rendered.opened > h2 {
+  background-color: hsl(120, 100%, 89%);
+}
+#problem_D_rendered {
+  background-color: hsl(180, 100%, 95%);
+}
+#problem_D_rendered.unopened:hover,
+#problem_D_rendered.opened > h2 {
+  background-color: hsl(180, 100%, 89%);
+}
+#problem_E_rendered {
+  background-color: hsl(240, 100%, 95%);
+}
+#problem_E_rendered.unopened:hover,
+#problem_E_rendered.opened > h2 {
+  background-color: hsl(240, 100%, 89%);
+}
+#problem_F_rendered {
+  background-color: hsl(300, 100%, 95%);
+}
+#problem_F_rendered.unopened:hover,
+#problem_F_rendered.opened > h2 {
+  background-color: hsl(300, 100%, 89%);
 }
 input {
   -webkit-appearance: none;
   appearance: none;
+}
+body > section {
+  margin-bottom: 50px;
 }
 .wa {
   color: hsl(0, 100%, 50%);
@@ -54,14 +110,26 @@ input[type=submit]:disabled {
 }
 input[type=text],
 input[type=number] {
-  border: 1px solid #333;
   height: 28px;
   font-size: 18px;
   padding-left: 2px;
+  border: 0;
+  box-shadow: inset 1px 4px 5px -6px rgba(0, 0, 0, 0.5);
+  border: solid 1px #ccc;
 }
 input[type=number] {
   width: 80px;
 }
 input[type=text] {
   width: 300px;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+#result {
+  text-align: center;
+}
+#result > p {
+  font-size: 26px;
 }

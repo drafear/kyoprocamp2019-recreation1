@@ -1,3 +1,6 @@
+let tried_problem_count = 0;
+let done_problem_count = 0;
+
 class Problem {
   constructor(prefix, title, timelimit_seconds, statement, anstext, initial_values, judge) {
     this.prefix = prefix;
@@ -9,7 +12,7 @@ class Problem {
     this.judge = judge;
   }
   get id() {
-    return `problem-${this.prefix}`;
+    return `problem_${this.prefix}`;
   }
 }
 
@@ -74,6 +77,12 @@ class Timer {
   get is_started() {
     return 'start_time' in this;
   }
+}
+
+function format_seconds(t) {
+  const m = Math.floor(t / 60);
+  const s = ('0' + t % 60).slice(-2);
+  return `${m}:${s}`;
 }
 
 const num_range = 1000000;
@@ -247,7 +256,7 @@ const Problems = [
   )
 ];
 
-function init_problems_vue() {
+function init_problems_vue(vm_score) {
   let template = "";
   for (const prob of Problems) {
     template += `<div id='${prob.id}'></div>`;
@@ -257,16 +266,17 @@ function init_problems_vue() {
     template: `<div>${template}</div>`,
   });
   for (const prob of Problems) {
+    const prefix = prob.prefix;
     const judge = prob.judge;
-    const rendered_id = `${prob.id}-rendered`;
+    const rendered_id = `${prob.id}_rendered`;
     const vm = new Vue({
       el: `#${prob.id}`,
       template: `
-<section id='#${rendered_id}'>
-  <h2 @click='is_started = start_timer(timer);'>
+<section id='${rendered_id}' @click='is_started = start_timer(timer);' :class='{ opened: is_started, unopened: !is_started }'>
+  <h2><span>
     ${prob.prefix}. ${prob.title}
-    <img src='assets/clock.png' alt='clock' class='clock'></span>{{ format_timer(rest_seconds) }}
-  </h2>
+    <img src='assets/clock.png' alt='clock' class='clock'>{{ format_seconds(rest_seconds) }}
+  </span></h2>
   <form @submit.prevent="judge(ans)" v-if='is_started'>
     <div class='statement'>
       ${prob.statement}
@@ -296,33 +306,113 @@ function init_problems_vue() {
           vm.judge_result = result;
           if (result.is_ac) {
             vm.timer.stop();
+            Vue.set(vm_score.scores, prefix, new ACScore(vm.timer.elapsed_seconds));
+            ++done_problem_count;
           }
         },
+        format_seconds: format_seconds,
         start_timer: timer => {
           if (!timer.is_started) {
+            Vue.set(vm_score.scores, prefix, new WAScore());
             timer.start(elapsed_seconds => {
               if (elapsed_seconds >= vm.timelimit_seconds) {
                 timer.stop();
                 vm.judge_result = new JudgeResult(false, '時間切れです。');
+                ++done_problem_count;
               }
               vm.rest_seconds = Math.max(0, vm.timelimit_seconds - elapsed_seconds);
             });
+            ++tried_problem_count;
           }
           return timer.is_started;
         },
-        format_timer: t => {
-          const m = Math.floor(t / 60);
-          const s = ('0' + t % 60).slice(-2);
-          return `${m}:${s}`;
-        }
       }
     });
   }
   return res;
 }
 
+class ACScore {
+  constructor(penalty) {
+    this.penalty = penalty;
+  }
+  get is_ac() { return true; }
+  toString() {
+    return `${format_seconds(this.penalty)}`;
+  }
+}
+class WAScore {
+  constructor() { }
+  get penalty() { return 0; }
+  get is_ac() { return false; }
+  toString() {
+    return `-`;
+  }
+}
+class Unsolved {
+  constructor() { }
+  get penalty() { return 0; }
+  get is_ac() { return false; }
+  toString() {
+    return `-`;
+  }
+}
+
+function init_result_vue() {
+  const initial_scores = {};
+  for (const prob of Problems) {
+    initial_scores[prob.prefix] = new Unsolved();
+  }
+  const vm = new Vue({
+    el: '#result',
+    data: {
+      scores: initial_scores
+    },
+    template: `
+<section id='result'>
+  <p>{{ total_ac(scores) }}完 ペナルティ {{ format_seconds(total_penalty(scores)) }}</p>
+  <a :href="'https://twitter.com/share?url=https://drafear.github.io/kyoprocamp2019-recreation1/&hashtags=kyoprocamp_X&text='+encodeURIComponent(tweet_text(scores, total_ac, total_penalty))" target='_blank'>結果をツイッターで共有</a>
+</section>
+    `,
+    methods: {
+      total_ac: (scores) => {
+        let res = 0;
+        for (const prob of Problems) {
+          if (scores[prob.prefix].is_ac) {
+            ++res;
+          }
+        }
+        return res === Problems.length ? "全" : res;
+      },
+      total_penalty: (scores) => {
+        let res = 0;
+        for (const prob of Problems) {
+          res += scores[prob.prefix].penalty;
+        }
+        return res;
+      },
+      format_seconds: format_seconds,
+      tweet_text: (scores, total_ac, total_penalty) => {
+        let detail = "";
+        for (const prob of Problems) {
+          const score = scores[prob.prefix];
+          detail += `${prob.prefix}: ${score}\n`;
+        }
+        return `数探しゲームをプレイしました！
+結果: ${total_ac(scores)}完 ペナルティ ${format_seconds(total_penalty(scores))}
+
+${detail}
+みんなも挑戦してみよう！
+`;
+      },
+    },
+  });
+  return vm;
+}
+
 function init_vue() {
-  init_problems_vue();
+  const vm_score = init_result_vue();
+  init_problems_vue(vm_score);
 }
 
 function init_inputs() {
@@ -335,9 +425,19 @@ function init_inputs() {
   });
 }
 
+function init_events() {
+  window.addEventListener('beforeunload', e => {
+    if (tried_problem_count > 0 && done_problem_count < Problems.length) {
+      e.preventDefault();
+      e.returnValue = '問題に挑戦中ですがページを離れますか？';
+    }
+  });
+}
+
 function init() {
   init_inputs();
   init_vue();
+  init_events();
 }
 
 init();

@@ -1,23 +1,84 @@
+body > section {
+  padding: 0 8px;
+}
+
 section {
   > h2 {
-    @h: 24px;
-    font-size: @h;
-    > .clock {
-      position: relative;
-      height: @h + 2px;
-      top: 3px;
-      padding-left: 15px;
-      padding-right: 6px;
+    margin: 0;
+    padding: 20px 0 20px 8px;
+    &> span {
+      @h: 24px;
+      font-size: @h;
+      > .clock {
+        position: relative;
+        height: @h + 2px;
+        top: 3px;
+        padding-left: 15px;
+        padding-right: 6px;
+      }
     }
   }
   > form {
-    padding-bottom: 30px;
+    padding: 5px 0 30px 8px;
+  }
+  &.unopened {
+    cursor: pointer;
+    transition: background-color .3s;
+  }
+}
+@S: 100%;
+@L: 95%;
+@Ldiff: 6%;
+#problem_A_rendered {
+  background-color: hsl(0, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(0, @S, @L - @Ldiff);
+  }
+}
+#problem_B_rendered {
+  background-color: hsl(60, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(60, @S, @L - @Ldiff);
+  }
+}
+#problem_C_rendered {
+  background-color: hsl(120, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(120, @S, @L - @Ldiff);
+  }
+}
+#problem_D_rendered {
+  background-color: hsl(180, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(180, @S, @L - @Ldiff);
+  }
+}
+#problem_E_rendered {
+  background-color: hsl(240, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(240, @S, @L - @Ldiff);
+  }
+}
+#problem_F_rendered {
+  background-color: hsl(300, @S, @L);
+  &.unopened:hover,
+  &.opened > h2 {
+    background-color: hsl(300, @S, @L - @Ldiff);
   }
 }
 
 input {
   -webkit-appearance: none;
   appearance: none;
+}
+
+body > section {
+  margin-bottom: 50px;
 }
 
 // ac, wa
@@ -63,10 +124,14 @@ input[type=submit]:disabled {
 
 input[type=text],
 input[type=number] {
-  border: 1px solid #333;
+  // border: 1px solid #333;
   height: 28px;
   font-size: 18px;
   padding-left: 2px;
+  border: 0;
+  box-shadow: inset 1px 4px 5px -6px rgba(0,0,0,0.5);
+  border: solid 1px #ccc;
+  // border-bottom: 1px dotted #999;
 }
 
 input[type=number] {
@@ -75,4 +140,16 @@ input[type=number] {
 
 input[type=text] {
   width: 300px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#result {
+  text-align: center;
+  > p {
+    font-size: 26px;
+  }
 }
