@@ -45,8 +45,8 @@ function bin_add(a, b) {
   let carry = 0;
   let res = "";
   for (let i = 0; i < Math.max(a.length, b.length); ++i) {
-    const left = a.length - i - 1 < 0 ? 0 : a[a.length - i - 1];
-    const right = b.length - i - 1 < 0 ? 0 : b[b.length - i - 1];
+    const left = a.length - i - 1 < 0 ? 0 : a[a.length - i - 1] == "0" ? 0 : 1;
+    const right = b.length - i - 1 < 0 ? 0 : b[b.length - i - 1] == "0" ? 0 : 1;
     const sum = left + right + carry;
     carry = sum >= 2 ? 1 : 0;
     res = (sum % 2).toString() + res;
@@ -173,7 +173,7 @@ const Problems = [
             return new JudgeResult(false, `${original_S[i]} XOR ${original_S[j]} = ${bin_xor(S[i], S[j])}`);
           }
           if (bin_add(S[i], S[j]) in memo) {
-            return new JudgeResult(false, `${original_S[i]} + ${original_S[j]} = ${original_S[bin_add(S[i], S[j])]}`);
+            return new JudgeResult(false, `${original_S[i]} + ${original_S[j]} = ${original_S[memo[bin_add(S[i], S[j])]]}`);
           }
         }
       }
